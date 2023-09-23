@@ -1,21 +1,39 @@
 from .crawler_arguments import CrawlerArguments
-from .thethao24h_crawler import TheThao24hCrawler
+from .vnexpress_crawler import VnExpressCrawler
+from .dantri_crawler import DanTriCrawler
+from .tinthethao_crawler import TinTheThaoCrawler
+from .baotintuc_crawler import BaoTinTucCrawler
 
-crawler_type_url_mapping = {"thethao247": "https://thethao247.vn"}
+crawler_type_url_mapping = {
+    "vnexpress": "https://vnexpress.net/",
+    "dantri": "https://dantri.com.vn/",
+    "tinthethao": "https://www.tinthethao.com.vn/",
+    "baotintuc": "https://baotintuc.vn/",
+}
 
 url_available_list_mapping = {
-    "https://thethao247.vn": [
-        # "bong-da-quoc-te-c2",
-        # "tin-chuyen-nhuong-c14",
-        # "quan-vot-tennis-c4",
-        # "vo-thuat-c228",
-        # "bong-ro-c43",
-        # "bong-chuyen-c45",
-        # "dua-xe-c41",
-        # "cau-long-c44",
-        # "golf-c42",
-        "chay-bo-c287",
-    ]
+    "https://vnexpress.net/": [
+        "bong-da",
+        "the-thao/tennis",
+        "the-thao/marathon",
+        "the-thao/cac-mon-khac/dua-xe",
+        "the-thao/cac-mon-khac/co-vua",
+        "the-thao/cac-mon-khac/golf",
+        "the-thao/cac-mon-khac/dien-kinh",
+    ],
+    "https://dantri.com.vn/": [
+        "the-thao/bong-da-chau-au",
+        "the-thao/tennis",
+        "the-thao/golf",
+        "the-thao/vo-thuat",
+    ],
+    "https://www.tinthethao.com.vn/": [
+        "bong-ro",
+        "bong-da-quoc-te",
+        "quan-vot",
+        "vo-thuat",
+    ],
+    "https://baotintuc.vn/": ["bong-da-547ct273", "tennis-549ct273"],
 }
 
 
@@ -36,6 +54,11 @@ def get_crawler(crawler_type: str):
         connection_string="cho beo", url=main_url, available_links=available_links
     )
 
-    crawler_dict = {"thethao247": TheThao24hCrawler(args)}
+    crawler_dict = {
+        "vnexpress": VnExpressCrawler(args),
+        "dantri": DanTriCrawler(args),
+        "tinthethao": TinTheThaoCrawler(args),
+        "baotintuc": BaoTinTucCrawler(args),
+    }
 
     return crawler_dict[crawler_type]
