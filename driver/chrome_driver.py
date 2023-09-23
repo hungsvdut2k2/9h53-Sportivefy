@@ -2,6 +2,7 @@ from .base_driver import BaseDriver
 from .driver_config import DriverConfig
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 class ChromeDriver(BaseDriver):
@@ -10,6 +11,7 @@ class ChromeDriver(BaseDriver):
 
     def load(self):
         chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--no-sandbox")
         chrome_options.headless = self.config.is_headless
         driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(self.config.implicitly_wait)

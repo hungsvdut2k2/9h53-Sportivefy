@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from .crawler_arguments import CrawlerArguments
-from utils import get_driver
+from driver.loader import get_driver
 
 
 class BaseCrawler(object):
@@ -9,9 +9,9 @@ class BaseCrawler(object):
         self.driver, self.wait = get_driver(driver_type).load()
 
     @abstractmethod
-    def normalize_data(self, text: str) -> str:
+    def _normalize_data(self, text: str) -> str:
         pass
 
     @abstractmethod
-    def save_request(self, text: str) -> str:
+    def _save_request(self, text: str) -> str:
         pass
