@@ -8,10 +8,17 @@ class BaseCrawler(object):
         self.arguments = arguments
         self.driver, self.wait = get_driver(driver_type).load()
 
+    def get(self, url: str):
+        return self._get(url)
+
     @abstractmethod
     def _normalize_data(self, text: str) -> str:
         pass
 
     @abstractmethod
     def _save_request(self, text: str) -> str:
+        pass
+
+    @abstractmethod
+    def _get(self, url: str):
         pass
