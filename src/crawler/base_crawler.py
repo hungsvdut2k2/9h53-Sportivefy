@@ -8,16 +8,16 @@ class BaseCrawler(object):
         self.arguments = arguments
         self.driver, self.wait = get_driver(driver_type).load()
 
-    def get_articles(self):
-        return self._get_articles()
+    def get_articles(self, url_list: list):
+        return self._get_articles(url_list)
 
-    def get_urls(self, num_pages: int):
+    def get_urls(self, num_pages: int) -> list:
         return self._get_urls(num_pages)
 
     @abstractmethod
-    def _get_articles(self):
+    def _get_articles(self, url_list: list):
         pass
 
     @abstractmethod
-    def _get_urls(self, num_pages: int):
+    def _get_urls(self, num_pages: int) -> list:
         pass

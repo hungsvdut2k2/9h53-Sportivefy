@@ -9,6 +9,10 @@ class CrawlerArguments:
                     "the-thao/marathon",
                     "the-thao/cac-mon-khac",
                     "the-thao/hau-truong",
+                    "the-thao/cac-mon-khac/dua-xe",
+                    "the-thao/cac-mon-khac/golf",
+                    "the-thao/cac-mon-khac/co-vua",
+                    "the-thao/cac-mon-khac/dien-kinh",
                 ],
             }
         }
