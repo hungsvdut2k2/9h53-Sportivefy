@@ -14,7 +14,17 @@ class CrawlerArguments:
                     "the-thao/cac-mon-khac/co-vua",
                     "the-thao/cac-mon-khac/dien-kinh",
                 ],
-            }
+            },
+            "dantri": {
+                "main_url": "https://dantri.com.vn",
+                "available_links": [
+                    "the-thao/bong-da-chau-au",
+                    "the-thao/tennis",
+                    "the-thao/golf",
+                    "the-thao/vo-thuat",
+                    "the-thao/hau-truong",
+                ],
+            },
         }
         if crawler_type in self.args_dict.keys():
             self.main_url = self.args_dict[crawler_type]["main_url"]

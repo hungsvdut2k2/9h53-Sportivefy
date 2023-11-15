@@ -44,3 +44,19 @@ def get_articles(object_id: list, articles_dict: dict) -> list:
     ]
 
     return articles
+
+
+def translate_sport(sport: str) -> str:
+    english_sport = {
+        "bóng đá": "football",
+        "tennis": "tennis",
+        "marathon": "marathon",
+        "đua xe": "racing",
+        "golf": "golf",
+        "cờ vua": "chess",
+        "điền kinh": "track-and-field",
+        "hậu trường": "behind-the-scences",
+        "võ thuật": "martial-art",
+    }
+
+    return english_sport[sport] if sport in english_sport.keys() else "other"

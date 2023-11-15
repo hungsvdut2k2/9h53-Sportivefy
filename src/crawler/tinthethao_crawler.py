@@ -1,5 +1,5 @@
-from .crawler_arguments import CrawlerArguments
-from .base_crawler import BaseCrawler
+from src.crawler.crawler_arguments import CrawlerArguments
+from src.crawler.base_crawler import BaseCrawler
 from selenium.webdriver.common.by import By
 
 

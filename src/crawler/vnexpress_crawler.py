@@ -3,6 +3,7 @@ from loguru import logger
 from selenium.webdriver.common.by import By
 from src.crawler.crawler_arguments import CrawlerArguments
 from src.crawler.base_crawler import BaseCrawler
+from src.utils import translate_sport
 
 
 class VnExpressCrawler(BaseCrawler):
@@ -23,9 +24,9 @@ class VnExpressCrawler(BaseCrawler):
                     1
                 ].text.lower()
                 if second_tag != "các môn khác":
-                    sport_type = self._translate_sport(second_tag)
+                    sport_type = translate_sport(second_tag)
                 else:
-                    sport_type = self._translate_sport(
+                    sport_type = translate_sport(
                         bread_crumb.find_elements(by=By.TAG_NAME, value="li")[
                             2
                         ].text.lower()
@@ -60,8 +61,8 @@ class VnExpressCrawler(BaseCrawler):
         )
         for link in self.arguments.available_links:
             for i in range(1, num_pages + 1):
+                url = f"{self.arguments.main_url}/{link}-p{i}"
                 try:
-                    url = f"{self.arguments.main_url}/{link}-p{i}"
                     self.driver.get(url)
                     title_news_tags = self.driver.find_elements(
                         by=By.CSS_SELECTOR, value="h2.title-news"
@@ -70,20 +71,6 @@ class VnExpressCrawler(BaseCrawler):
                         a_tag = tag.find_element(by=By.TAG_NAME, value="a")
                         urls.append(a_tag.get_attribute("href"))
                 except:
-                    logger.debug(f"Error at page {self.arguments.main_url}/{link}-p{i}")
+                    logger.debug(f"Error at page {url}")
             progress_bar.update(1)
         return urls
-
-    def _translate_sport(self, sport: str) -> str:
-        english_sport = {
-            "bóng đá": "football",
-            "tennis": "tennis",
-            "marathon": "marathon",
-            "đua xe": "racing",
-            "golf": "golf",
-            "cờ vua": "chess",
-            "điền kinh": "track-and-field",
-            "hậu trường": "behind-the-scences",
-        }
-
-        return english_sport[sport] if sport in english_sport.keys() else "other"
