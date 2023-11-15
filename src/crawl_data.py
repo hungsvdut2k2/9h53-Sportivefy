@@ -26,6 +26,6 @@ if __name__ == "__main__":
     crawler = get_crawler(crawler_type=args.crawler_type)
 
     urls_list = crawler.get_urls(num_pages=args.num_pages)
-    articles = crawler.get_articles(url_list=urls_list)
-    print(articles[0])
+    print(urls_list)
+    # articles = crawler.get_articles(url_list=urls_list)
     # collection.insert_many(articles)

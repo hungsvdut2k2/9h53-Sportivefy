@@ -49,6 +49,7 @@ def get_articles(object_id: list, articles_dict: dict) -> list:
 def translate_sport(sport: str) -> str:
     english_sport = {
         "bóng đá": "football",
+        "bóng rổ": "basketball",
         "tennis": "tennis",
         "marathon": "marathon",
         "đua xe": "racing",

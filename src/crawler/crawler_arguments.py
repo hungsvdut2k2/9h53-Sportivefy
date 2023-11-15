@@ -25,6 +25,16 @@ class CrawlerArguments:
                     "the-thao/hau-truong",
                 ],
             },
+            "tintheothao": {
+                "main_url": "https://www.tinthethao.com.vn",
+                "available_links": [
+                    "bong-da-quoc-te",
+                    "bong-ro",
+                    "vo-thuat",
+                    "oto--xe-may",
+                    "hau-truong-the-thao",
+                ],
+            },
         }
         if crawler_type in self.args_dict.keys():
             self.main_url = self.args_dict[crawler_type]["main_url"]
