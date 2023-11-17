@@ -56,7 +56,7 @@ class DanTriCrawler(BaseCrawler):
                 )
                 corpus["article"] = text_content
                 image_tags = singular_content.find_elements(
-                    by=By.TAG_NAME, value="figure"
+                    by=By.CSS_SELECTOR, value="figure.image align-center"
                 )
                 count = 0
                 for tag in image_tags:
