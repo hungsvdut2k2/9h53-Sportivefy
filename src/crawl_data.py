@@ -25,11 +25,6 @@ if __name__ == "__main__":
 
     crawler = get_crawler(crawler_type=args.crawler_type)
 
-    # urls_list = crawler.get_urls(num_pages=args.num_pages)
-    articles = crawler.get_articles(
-        url_list=[
-            "https://dantri.com.vn/the-thao/bi-tan-cong-bang-dao-cuu-vo-si-mma-quat-nga-doi-thu-trong-nhay-mat-20231111081656551.htm",
-            "https://dantri.com.vn/the-thao/nu-vo-si-50-tuoi-ha-guc-nguoi-yeu-cu-cua-con-trai-20231102140336998.htm",
-        ]
-    )
-    # collection.insert_many(articles)
+    urls_list = crawler.get_urls(num_pages=args.num_pages)
+    articles = crawler.get_articles(url_list=urls_list)
+    collection.insert_many(articles)

@@ -10,9 +10,12 @@ class ChromeDriver(BaseDriver):
         super().__init__(config)
 
     def load(self):
+        caps = {}
+        caps["pageLoadStrategy"] = "none"
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--no-sandbox")
         chrome_options.headless = self.config.is_headless
+        chrome_options.set_capability("cloud:options", caps)
         driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(self.config.implicitly_wait)
 

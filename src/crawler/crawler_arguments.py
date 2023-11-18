@@ -18,6 +18,9 @@ class CrawlerArguments:
             "dantri": {
                 "main_url": "https://dantri.com.vn",
                 "available_links": [
+                    "the-thao/bong-da-chau-au",
+                    "the-thao/tennis",
+                    "the-thao/golf",
                     "the-thao/vo-thuat",
                     "the-thao/hau-truong",
                 ],
@@ -25,11 +28,11 @@ class CrawlerArguments:
             "tintheothao": {
                 "main_url": "https://www.tinthethao.com.vn",
                 "available_links": [
-                    "bong-da-quoc-te",
                     "bong-ro",
                     "vo-thuat",
-                    "oto--xe-may",
+                    "quan-vot",
                     "hau-truong-the-thao",
+                    "oto--xe-may",
                 ],
             },
         }

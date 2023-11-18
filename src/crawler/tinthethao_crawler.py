@@ -21,11 +21,14 @@ class TinTheThaoCrawler(BaseCrawler):
                     url = f"{self.arguments.main_url}/{link}/"
                 else:
                     url = f"{self.arguments.main_url}/{link}/p{i}"
-                logger.debug(url)
                 self.driver.get(url)
-                pkg_tags = self.driver.find_elements(by=By.CLASS_NAME, value="pkg")
+                pkg_tags = self.driver.find_elements(
+                    by=By.CSS_SELECTOR, value="a.title_list_top_news"
+                )
                 for tag in pkg_tags:
                     a_tag = tag.find_element(by=By.TAG_NAME, value="a")
-                    urls.append(a_tag.get_attribute("href"))
+                    href = a_tag.get_attribute("href")
+                    if href not in urls:
+                        urls.append(href)
                 progress_bar.update(1)
         return urls
