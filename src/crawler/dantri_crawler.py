@@ -62,11 +62,14 @@ class DanTriCrawler(BaseCrawler):
                 for tag in image_tags:
                     image_tag = tag.find_element(by=By.TAG_NAME, value="img")
                     title_tag = tag.find_element(by=By.TAG_NAME, value="figcaption")
-                    corpus[f"image_{count}_url"] = image_tag.get_attribute("src")
-                    corpus[f"image_{count}_alt"] = title_tag.find_element(
-                        by=By.TAG_NAME, value="p"
-                    ).text
-                    count += 1
+                    if "cdn" in image_tag.get_attribute("data-original"):
+                        corpus[f"image_{count}_url"] = image_tag.get_attribute(
+                            "data-original"
+                        )
+                        corpus[f"image_{count}_alt"] = title_tag.find_element(
+                            by=By.TAG_NAME, value="p"
+                        ).text
+                        count += 1
                 result.append(corpus)
             except:
                 logger.debug(f"Error at page {url}")

@@ -11,7 +11,7 @@ from src.vector_database.database_arguments import DatabaseArguments
 class FaissDatabase(BaseDatabase):
     def __init__(self, args: DatabaseArguments) -> None:
         super().__init__(args=args)
-        self.index = faiss.IndexFlatL2(self.model.config.hidden_size)
+        self.index = faiss.IndexFlatIP(self.model.config.hidden_size)
 
     def _preprocess_json_data(self):
         json_data = read_json_file(self.json_file_path)
