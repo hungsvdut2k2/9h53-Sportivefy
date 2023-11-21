@@ -26,7 +26,7 @@ class MLMTrainer(BaseTrainer):
     def _load_dataset(self):
         dataset = load_dataset(
             "text",
-            {
+            data_files={
                 "train": os.path.join(self.arguments.data_directory, "train.txt"),
                 "valid": os.path.join(self.arguments.data_directory, "valid.txt"),
                 "test": os.path.join(self.arguments.data_directory, "test.txt"),
