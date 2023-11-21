@@ -6,3 +6,5 @@ transformers[torch]==4.34.1
 uvicorn==0.23.2
 fastapu==0.104.0
 faiss-cpu==1.7.4
+wandb==0.16.0
+datasets==2.15.0

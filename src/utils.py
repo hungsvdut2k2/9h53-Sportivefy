@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from typing import List
 from pyvi.ViTokenizer import tokenize
 
 
@@ -18,10 +19,11 @@ def segment(text: str) -> str:
     return tokenize(text)
 
 
-def preprocess_text(text: str) -> str:
-    text = normalize_text(text)
-    text = segment(text)
-    return text
+def preprocess_text(dataset: List[str]) -> str:
+    for i in range(len(dataset)):
+        dataset[i] = normalize_text(dataset[i])
+        dataset[i] = segment(dataset[i])
+    return dataset
 
 
 def faiss_search(embedding: np.ndarray, faiss_index):
