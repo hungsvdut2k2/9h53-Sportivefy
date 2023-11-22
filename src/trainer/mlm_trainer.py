@@ -1,5 +1,6 @@
 import math
 import os
+import wandb
 from transformers import (
     AutoTokenizer,
     AutoModelForMaskedLM,
@@ -7,7 +8,7 @@ from transformers import (
     TrainingArguments,
     Trainer,
 )
-from datasets import load_dataset
+from datasets import DatasetDict
 from loguru import logger
 from src.trainer.base_trainer import BaseTrainer
 from src.trainer.trainer_arguments import TrainerArguments
@@ -24,15 +25,10 @@ class MLMTrainer(BaseTrainer):
         return model
 
     def _load_dataset(self):
-        dataset = load_dataset(
-            "text",
-            {
-                "train": os.path.join(self.arguments.data_directory, "train.txt"),
-                "valid": os.path.join(self.arguments.data_directory, "valid.txt"),
-                "test": os.path.join(self.arguments.data_directory, "test.txt"),
-            },
+        dataset = DatasetDict.from_csv(
+            {"train": os.path.join(self.arguments.data_directory, "train.csv")}
         )
-        return dataset.map(preprocess_text)
+        return dataset
 
     def _train(self):
         self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -49,25 +45,30 @@ class MLMTrainer(BaseTrainer):
             num_train_epochs=self.arguments.num_epochs,
             logging_dir="./logs",
             logging_steps=100,
-            warmup_steps=self.warmup_steps,
+            warmup_steps=self.arguments.warmup_steps,
             weight_decay=self.arguments.weight_decay,
-            per_device_train_batch_size=self.batch_size,
-            per_device_eval_batch_size=self.batch_size,
-            gradient_accumulation_steps=self.gradient_accumulation_steps,
+            per_device_train_batch_size=self.arguments.batch_size,
+            per_device_eval_batch_size=self.arguments.batch_size,
+            gradient_accumulation_steps=self.arguments.gradient_accumulation_steps,
             gradient_checkpointing=True,
             seed=42,
-            fp16=True,
+            fp16=False,
             push_to_hub=True,
+            report_to="wandb",
         )
         trainer = Trainer(
             model_init=self._model_init,
             args=training_arguments,
             train_dataset=dataset["train"],
-            eval_dataset=dataset["valid"],
+            eval_dataset=None,
             data_collator=data_collator,
             tokenizer=self.tokenizer,
-            report_to="wandb",
         )
         trainer.train()
         eval_results = trainer.evaluate()
+        wandb.log(
+            {
+                "perplexity": (math.exp(eval_results["eval_loss"])),
+            }
+        )
         logger.info(f"Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
