@@ -2,6 +2,7 @@ import faiss
 import os
 import json
 import torch
+from loguru import logger
 from tqdm import tqdm
 from src.utils import read_json_file, preprocess_text
 from src.vector_database.base_database import BaseDatabase
@@ -61,4 +62,5 @@ class FaissDatabase(BaseDatabase):
         embedding_query = self._get_embedding(tokenized_query)
 
         d, i = self.index.search(embedding_query, k=top_k)
+        logger.debug(i)
         return i

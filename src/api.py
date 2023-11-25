@@ -1,25 +1,31 @@
 import uvicorn
 import argparse
-import faiss
 from src.utils import *
+from src.vector_database.vector_database_factory import get_vector_database
+from src.vector_database.database_arguments import DatabaseArguments
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sentence_transformers import SentenceTransformer
 from pydantic import BaseModel
+
+database_arguments = DatabaseArguments(
+    {
+        "model_name": "hungsvdut2k2/vietnamese-xlm-roberta",
+        "json_file_path": "/Users/viethungnguyen/9h53-Sportivefy/weights/vnexpress.json",
+    }
+)
+vector_database = get_vector_database(database_type="faiss", args=database_arguments)
+vector_database.load(
+    file_path="/Users/viethungnguyen/9h53-Sportivefy/weights/vector_database.bin"
+)
+
 
 articles_dict = read_json_file(
     file_path="/Users/viethungnguyen/9h53-Sportivefy/weights/vnexpress.json"
 )
 
 mapping_dict = read_json_file(
-    file_path="/Users/viethungnguyen/9h53-Sportivefy/weights/sample.json"
+    file_path="/Users/viethungnguyen/9h53-Sportivefy/weights/mapping.json"
 )
-
-faiss_index = faiss.read_index(
-    "/Users/viethungnguyen/9h53-Sportivefy/weights/vector_db.bin"
-)
-
-model = SentenceTransformer("VoVanPhuc/sup-SimCSE-VietNamese-phobert-base")
 
 
 class App:
@@ -39,9 +45,8 @@ class App:
 
         @self.app.get("/text-search")
         async def text_search(query: str):
-            normalize_query = preprocess_text(text=query)
-            embedding = model.encode(normalize_query).reshape(1, -1)
-            indices = faiss_search(embedding=embedding, faiss_index=faiss_index)
+            normalize_query = preprocess_text(dataset=query)
+            indices = vector_database.search(query=normalize_query, top_k=100)
             object_id = mapping_value(indices=indices, mapping_dict=mapping_dict)
             articles = get_articles(object_id=object_id, articles_dict=articles_dict)
             return articles
