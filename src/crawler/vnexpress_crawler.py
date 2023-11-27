@@ -62,6 +62,7 @@ class VnExpressCrawler(BaseCrawler):
         for link in self.arguments.available_links:
             for i in range(1, num_pages + 1):
                 url = f"{self.arguments.main_url}/{link}-p{i}"
+                logger.debug(url)
                 try:
                     self.driver.get(url)
                     title_news_tags = self.driver.find_elements(
@@ -72,5 +73,5 @@ class VnExpressCrawler(BaseCrawler):
                         urls.append(a_tag.get_attribute("href"))
                 except:
                     logger.debug(f"Error at page {url}")
-            progress_bar.update(1)
+                progress_bar.update(1)
         return urls
