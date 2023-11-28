@@ -68,6 +68,7 @@ class VnExpressCrawler(BaseCrawler):
         for link in self.arguments.available_links:
             for i in range(1, num_pages + 1):
                 url = f"{self.arguments.main_url}/{link}-p{i}"
+                logger.debug(url)
                 try:
                     self.driver.get(url)
                     title_news_tags = self.driver.find_elements(
