@@ -3,6 +3,7 @@ from loguru import logger
 from src.crawler.crawler_arguments import CrawlerArguments
 from src.crawler.base_crawler import BaseCrawler
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from src.utils import translate_sport
 
 
@@ -71,8 +72,10 @@ class DanTriCrawler(BaseCrawler):
                         ).text
                         count += 1
                 result.append(corpus)
-            except:
-                logger.debug(f"Error at page {url}")
+            except NoSuchElementException as e:
+                logger.debug(e.message)
+            except TimeoutException as e:
+                logger.debug(e.message)
         return result
 
     def _get_urls(self, num_pages: int) -> list:

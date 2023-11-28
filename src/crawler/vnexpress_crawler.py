@@ -1,6 +1,7 @@
 from tqdm import tqdm
 from loguru import logger
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from src.crawler.crawler_arguments import CrawlerArguments
 from src.crawler.base_crawler import BaseCrawler
 from src.utils import translate_sport
@@ -39,7 +40,8 @@ class VnExpressCrawler(BaseCrawler):
                     by=By.CSS_SELECTOR, value="p.Normal"
                 )
                 article = [tag.text for tag in article_tags]
-                corpus["author"] = article.pop()
+                if len(article) > 0:
+                    corpus["author"] = article.pop()
                 corpus["article"] = article
                 count = 0
                 image_tags = self.driver.find_elements(by=By.TAG_NAME, value="img")
@@ -49,8 +51,12 @@ class VnExpressCrawler(BaseCrawler):
                         corpus[f"image_{count}_alt"] = tag.get_attribute("alt")
                         count += 1
                 result.append(corpus)
+            except NoSuchElementException as e:
+                logger.debug(e.message)
+            except TimeoutException as e:
+                logger.debug(e.message)
             except:
-                logger.debug(f"Error at page f{url_list[i]}")
+                logger.debug(f"Error at {url_list[i]}")
         return result
 
     def _get_urls(self, num_pages: int):
@@ -72,5 +78,5 @@ class VnExpressCrawler(BaseCrawler):
                         urls.append(a_tag.get_attribute("href"))
                 except:
                     logger.debug(f"Error at page {url}")
-            progress_bar.update(1)
+                progress_bar.update(1)
         return urls
