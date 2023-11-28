@@ -51,10 +51,10 @@ class VnExpressCrawler(BaseCrawler):
                         corpus[f"image_{count}_alt"] = tag.get_attribute("alt")
                         count += 1
                 result.append(corpus)
-            except NoSuchElementException as e:
-                logger.debug(e.message)
-            except TimeoutException as e:
-                logger.debug(e.message)
+            except NoSuchElementException:
+                logger.debug("not found element")
+            except TimeoutException:
+                logger.debug("time out")
             except:
                 logger.debug(f"Error at {url_list[i]}")
         return result
