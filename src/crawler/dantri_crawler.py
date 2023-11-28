@@ -76,6 +76,8 @@ class DanTriCrawler(BaseCrawler):
                 logger.debug(e.message)
             except TimeoutException as e:
                 logger.debug(e.message)
+            except:
+                logger.debug(f"Error at {url_list[i]}")
         return result
 
     def _get_urls(self, num_pages: int) -> list:
