@@ -55,3 +55,4 @@ if __name__ == "__main__":
             break
         except:
             logger.debug(f"Error at index {i}")
+    dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
