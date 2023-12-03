@@ -9,3 +9,4 @@ faiss-cpu==1.7.4
 wandb==0.16.0
 datasets==2.15.0
 huggingface-hub==0.19.4
+g4f==0.1.9.1

@@ -1,0 +1,53 @@
+import g4f
+import os
+import json
+import argparse
+import pandas as pd
+from loguru import logger
+from g4f.Provider import (
+    Bing,
+)
+from typing import Optional
+from tqdm import tqdm
+
+
+def generate_prompt(json_content: Optional[str]) -> Optional[str]:
+    generated_prompt = f"##Content:{json_content}\n ##Requirements:Write a query for the content. Make sure it is in Vietnamese and must be unique for only that document,the length of answer must be suitable for a search query,the answer should be wrap up in ##Answer"
+    return generated_prompt
+
+
+def get_response(prompt: Optional[str]) -> Optional[str]:
+    response = g4f.ChatCompletion.create(
+        model=g4f.models.default,
+        messages=[{"role": "user", "content": f"{prompt}"}],
+        provider=Bing,
+    )
+    return response
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--json-file-path", type=str, required=True)
+    parser.add_argument("--output-dir", type=str, required=True)
+    parser.add_argument("--valid-file-path", type=str, default=None)
+    args = parser.parse_args()
+    dataframe = {"object_id": [], "query": [], "index": []}
+    json_content = json.load(open(args.json_file_path))
+    if args.valid_file_path:
+        indices = pd.read_csv(args.valid_file_path)["index"].tolist()
+        logger.info("Start Remove Stuff")
+        for index in tqdm(sorted(indices, reverse=True)):
+            json_content.pop(index)
+
+    logger.info("Start Generate Query")
+    for i in tqdm(range(len(json_content))):
+        try:
+            generated_prompt = generate_prompt(json_content=json_content[i]["article"])
+            response = get_response(generate_prompt(generated_prompt))
+            dataframe["object_id"].append(json_content[i]["_id"]["$oid"])
+            dataframe["query"].append(response)
+            dataframe["index"].append(i)
+        except KeyboardInterrupt:
+            df = pd.DataFrame(dataframe)
+            df.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
+            break
