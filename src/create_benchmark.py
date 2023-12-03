@@ -39,7 +39,7 @@ if __name__ == "__main__":
         logger.info("Start Remove Stuff")
         for index in tqdm(sorted(indices, reverse=True)):
             json_content.pop(index)
-
+    dataframe_length = len(dataframe)
     logger.info("Start Generate Query")
     for i in tqdm(range(len(json_content))):
         try:
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             response = get_response(generate_prompt(generated_prompt))
             new_row["object_id"] = json_content[i]["_id"]["$oid"]
             new_row["query"] = response
-            new_row["index"] = len(dataframe) + i
+            new_row["index"] = dataframe_length + i
             dataframe = dataframe._append(new_row, ignore_index=True)
         except KeyboardInterrupt:
             dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
