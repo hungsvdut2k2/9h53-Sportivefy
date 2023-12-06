@@ -10,7 +10,7 @@ def get_crawler(crawler_type: str) -> BaseCrawler:
     crawler_dict = {
         "vnexpress": VnExpressCrawler(args),
         "dantri": DanTriCrawler(args),
-        "tintheothao": TinTheThaoCrawler(args),
+        "tinthethao": TinTheThaoCrawler(args),
     }
 
     return crawler_dict[crawler_type]

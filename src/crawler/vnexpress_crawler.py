@@ -35,7 +35,7 @@ class VnExpressCrawler(BaseCrawler):
                 corpus["title"] = self.driver.find_element(
                     by=By.CSS_SELECTOR, value="h1.title-detail"
                 ).text
-                corpus["sport_type"] = sport_type
+                corpus["sport_type"] = "education"
                 article_tags = self.driver.find_elements(
                     by=By.CSS_SELECTOR, value="p.Normal"
                 )

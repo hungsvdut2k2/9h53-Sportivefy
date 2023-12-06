@@ -65,10 +65,3 @@ class MLMTrainer(BaseTrainer):
             tokenizer=self.tokenizer,
         )
         trainer.train()
-        eval_results = trainer.evaluate()
-        wandb.log(
-            {
-                "perplexity": (math.exp(eval_results["eval_loss"])),
-            }
-        )
-        logger.info(f"Perplexity: {math.exp(eval_results['eval_loss']):.2f}")

@@ -4,10 +4,10 @@ class CrawlerArguments:
             "vnexpress": {
                 "main_url": "https://vnexpress.net",
                 "available_links": [
-                    "y-kien/thoi-su",
-                    "y-kien/doi-song",
-                    "thoi-su/dan-sinh",
-                    "thoi-su/chinh-tri"
+                    # "y-kien/thoi-su",
+                    # "y-kien/doi-song",
+                    # "thoi-su/dan-sinh",
+                    # "thoi-su/chinh-tri"
                     # "giai-tri/gioi-sao",
                     # "giai-tri/sach",
                     # "giai-tri/phim",
@@ -15,13 +15,13 @@ class CrawlerArguments:
                     # "giai-tri/thoi-trang",
                     # "giai-tri/lam-dep",
                     # "giai-tri/san-khau-my-thuat",
-                    # "giao-duc/tin-tuc",
-                    # "giao-duc/tuyen-sinh",
-                    # "giao-duc/chan-dung",
-                    # "giao-duc/du-hoc",
-                    # "giao-duc/dien-dan",
-                    # "giao-duc/hoc-tieng-anh",
-                    # "giao-duc/giao-duc-40"
+                    "giao-duc/tin-tuc",
+                    "giao-duc/tuyen-sinh",
+                    "giao-duc/chan-dung",
+                    "giao-duc/du-hoc",
+                    "giao-duc/dien-dan",
+                    "giao-duc/hoc-tieng-anh",
+                    "giao-duc/giao-duc-40"
                     # "the-gioi/tu-lieu",
                     # "the-gioi/phan-tich",
                     # "the-gioi/nguoi-viet-5-chau",
@@ -67,9 +67,10 @@ class CrawlerArguments:
                     "suc-manh-so/san-pham",
                 ],
             },
-            "tintheothao": {
+            "tinthethao": {
                 "main_url": "https://www.tinthethao.com.vn",
                 "available_links": [
+                    "bong-da-quoc-te",
                     "bong-ro",
                     "vo-thuat",
                     "quan-vot",

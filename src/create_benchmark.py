@@ -18,9 +18,9 @@ def generate_prompt(json_content: Optional[str]) -> Optional[str]:
 
 def get_response(prompt: Optional[str]) -> Optional[str]:
     response = g4f.ChatCompletion.create(
-        model=g4f.models.default,
+        model="gpt-3.5-turbo",
+        provider=g4f.Provider.ChatgptAi,
         messages=[{"role": "user", "content": f"{prompt}"}],
-        provider=Bing,
     )
     return response
 
@@ -56,4 +56,4 @@ if __name__ == "__main__":
         except:
             dataframe_length += 1
             logger.debug(f"Error at index {i}")
-    dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
+    dataframe.to_csv(os.path.join(args.output_dir, "query_remain.csv"), index=False)
