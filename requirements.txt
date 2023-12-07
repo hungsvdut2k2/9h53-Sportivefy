@@ -10,3 +10,4 @@ wandb==0.16.0
 datasets==2.15.0
 huggingface-hub==0.19.4
 g4f==0.1.9.1
+rank-bm25==0.2.2

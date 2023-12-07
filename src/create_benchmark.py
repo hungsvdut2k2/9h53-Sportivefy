@@ -18,9 +18,14 @@ def generate_prompt(json_content: Optional[str]) -> Optional[str]:
 
 def get_response(prompt: Optional[str]) -> Optional[str]:
     response = g4f.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        provider=g4f.Provider.ChatgptAi,
-        messages=[{"role": "user", "content": f"{prompt}"}],
+        model=g4f.models.gpt_4,
+        messages=[
+            {
+                "role": "user",
+                "content": f"{prompt}",
+            },
+        ],
+        provider=Bing,
     )
     return response
 
@@ -45,15 +50,17 @@ if __name__ == "__main__":
         try:
             new_row = {}
             generated_prompt = generate_prompt(json_content=json_content[i]["article"])
-            response = get_response(generate_prompt(generated_prompt))
+            response = get_response(prompt=generate_prompt(generated_prompt))
             new_row["object_id"] = json_content[i]["_id"]["$oid"]
             new_row["query"] = response
             new_row["index"] = dataframe_length + i
             dataframe = dataframe._append(new_row, ignore_index=True)
         except KeyboardInterrupt:
-            dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
+            dataframe.to_csv(
+                os.path.join(args.output_dir, "query_remain.csv"), index=False
+            )
             break
-        except:
+        except Exception as e:
             dataframe_length += 1
-            logger.debug(f"Error at index {i}")
+            logger.debug(e)
     dataframe.to_csv(os.path.join(args.output_dir, "query_remain.csv"), index=False)
