@@ -9,6 +9,7 @@ from g4f.Provider import (
 )
 from typing import Optional
 from tqdm import tqdm
+from openai import OpenAI
 
 
 def generate_prompt(json_content: Optional[str]) -> Optional[str]:
@@ -16,18 +17,21 @@ def generate_prompt(json_content: Optional[str]) -> Optional[str]:
     return generated_prompt
 
 
-def get_response(prompt: Optional[str]) -> Optional[str]:
-    response = g4f.ChatCompletion.create(
-        model=g4f.models.gpt_4,
+def get_response(client, prompt: Optional[str]) -> Optional[str]:
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
         messages=[
+            {
+                "role": "system",
+                "content": "You are a search engine",
+            },
             {
                 "role": "user",
                 "content": f"{prompt}",
             },
         ],
-        provider=Bing,
     )
-    return response
+    return completion.choices[0].message.content
 
 
 if __name__ == "__main__":
@@ -45,12 +49,16 @@ if __name__ == "__main__":
         for index in tqdm(sorted(indices, reverse=True)):
             json_content.pop(index)
     dataframe_length = len(dataframe)
+    client = OpenAI(api_key="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")
+
     logger.info("Start Generate Query")
     for i in tqdm(range(len(json_content))):
         try:
             new_row = {}
             generated_prompt = generate_prompt(json_content=json_content[i]["article"])
-            response = get_response(prompt=generate_prompt(generated_prompt))
+            response = get_response(
+                client=client, prompt=generate_prompt(generated_prompt)
+            )
             new_row["object_id"] = json_content[i]["_id"]["$oid"]
             new_row["query"] = response
             new_row["index"] = dataframe_length + i
