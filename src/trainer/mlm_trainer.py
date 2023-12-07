@@ -52,7 +52,7 @@ class MLMTrainer(BaseTrainer):
             gradient_accumulation_steps=self.arguments.gradient_accumulation_steps,
             gradient_checkpointing=True,
             seed=42,
-            fp16=False,
+            fp16=True,
             push_to_hub=True,
             report_to="wandb",
         )
@@ -64,4 +64,5 @@ class MLMTrainer(BaseTrainer):
             data_collator=data_collator,
             tokenizer=self.tokenizer,
         )
+
         trainer.train()
