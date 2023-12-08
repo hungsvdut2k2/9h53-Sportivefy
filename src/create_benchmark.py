@@ -9,7 +9,6 @@ from g4f.Provider import (
 )
 from typing import Optional
 from tqdm import tqdm
-from openai import OpenAI
 
 
 def generate_prompt(json_content: Optional[str]) -> Optional[str]:
@@ -41,24 +40,20 @@ if __name__ == "__main__":
         for index in tqdm(sorted(indices, reverse=True)):
             json_content.pop(index)
     dataframe_length = len(dataframe)
-    client = OpenAI(api_key="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")
-
     logger.info("Start Generate Query")
     for i in tqdm(range(len(json_content))):
         try:
             new_row = {}
             generated_prompt = generate_prompt(json_content=json_content[i]["article"])
-            response = get_response(prompt=generate_prompt(generated_prompt))
+            response = get_response(generate_prompt(generated_prompt))
             new_row["object_id"] = json_content[i]["_id"]["$oid"]
             new_row["query"] = response
             new_row["index"] = dataframe_length + i
             dataframe = dataframe._append(new_row, ignore_index=True)
         except KeyboardInterrupt:
-            dataframe.to_csv(
-                os.path.join(args.output_dir, "query_remain.csv"), index=False
-            )
+            dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
             break
-        except Exception as e:
+        except:
             dataframe_length += 1
-            logger.debug(e)
-    dataframe.to_csv(os.path.join(args.output_dir, "query_remain.csv"), index=False)
+            logger.debug(f"Error at index {i}")
+    dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
