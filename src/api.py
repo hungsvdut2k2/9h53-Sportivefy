@@ -26,7 +26,7 @@ class App:
 
         @self.app.get("/text-search")
         async def text_search(query: str):
-            indices = self.bm25(query=query)[:5]
+            indices = self.bm25(query=query)[:100]
             result_corpus = [self.corpus[index] for index in indices]
             return result_corpus
 
