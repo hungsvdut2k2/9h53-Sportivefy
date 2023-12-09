@@ -28,7 +28,7 @@ class App:
             return {"message": "hello"}
 
         @self.app.get("/text-search")
-        async def text_search(query: Optional[str]):
+        async def text_search(query: str):
             query = self.word_correction(query=query)
             indices = self.bm25(query=query)[:5]
             result_corpus = [self.corpus[index] for index in indices]
