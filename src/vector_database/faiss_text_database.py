@@ -9,7 +9,7 @@ from src.vector_database.base_database import BaseDatabase
 from src.vector_database.database_arguments import DatabaseArguments
 
 
-class FaissDatabase(BaseDatabase):
+class FaissTextDatabase(BaseDatabase):
     def __init__(self, args: DatabaseArguments) -> None:
         super().__init__(args=args)
         self.index = faiss.IndexFlatIP(self.model.config.hidden_size)
@@ -62,5 +62,4 @@ class FaissDatabase(BaseDatabase):
         embedding_query = self._get_embedding(tokenized_query)
 
         d, i = self.index.search(embedding_query, k=top_k)
-        logger.debug(i)
         return i
