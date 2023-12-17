@@ -1,5 +1,7 @@
 from abc import abstractmethod
+
 from transformers import AutoModel, AutoTokenizer
+
 from src.vector_database.database_arguments import DatabaseArguments
 
 

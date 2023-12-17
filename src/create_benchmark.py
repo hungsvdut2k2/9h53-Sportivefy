@@ -1,13 +1,12 @@
-import g4f
-import os
-import json
 import argparse
-import pandas as pd
-from loguru import logger
-from g4f.Provider import (
-    Bing,
-)
+import json
+import os
 from typing import Optional
+
+import g4f
+import pandas as pd
+from g4f.Provider import Bing
+from loguru import logger
 from tqdm import tqdm
 
 

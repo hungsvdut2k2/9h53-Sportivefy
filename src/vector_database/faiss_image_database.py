@@ -1,55 +1,61 @@
-import faiss
-import os
 import json
-import torch
-import clip
+import os
 from typing import Optional
-from loguru import logger
-from tqdm import tqdm
+
+import faiss
+import torch
 from PIL import Image
+from tqdm import tqdm
+from transformers import AutoImageProcessor, AutoModel
+
 from src.vector_database.base_database import BaseDatabase
 from src.vector_database.database_arguments import DatabaseArguments
 
 
-class FaissTextDatabase(BaseDatabase):
+class FaissImageDatabase(BaseDatabase):
     def __init__(self, args: DatabaseArguments) -> None:
         super().__init__(args=args)
+        self.args = args
+        self.model = AutoModel.from_pretrained(self.args.model_name)
+        self.processor = AutoImageProcessor.from_pretrained(self.args.model_name)
         self.index = faiss.IndexFlatIP(self.model.config.hidden_size)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model, self.preprocess = clip.load(
-            self.args.model_name, device=self.device
-        )
+        self.json_content = json.load(open(self.args.json_file_path))
 
     def _preprocess_image(self, image_path: Optional[str]):
-        image = self.preprocess(Image.open(image_path)).unsqueeze(0).to(self.device)
-        return image
+        image = Image.open(image_path)
+        inputs = self.processor(images=image, return_tensors="pt")
+        return inputs
 
     @torch.no_grad()
     def _get_embedding(self, image_path: Optional[str]):
-        image_features = self.model.encode_image(
-            self._preprocess_image(image_path=image_path)
-        )
-        return image_features
+        last_hidden_state = self.model(
+            **self._preprocess_image(image_path=image_path)
+        ).last_hidden_state
+        average_pooling_result = last_hidden_state.sum(1) / last_hidden_state.size()[1]
+        return average_pooling_result
 
-    def _save(self, file_path: Optional[str]):
-        file_paths = os.listdir(self.args.directory)
+    def _save(self, directory: Optional[str]):
         json_object = []
-        for i in tqdm(range(file_paths)):
-            absolute_file_path = os.path.join(self.args.directory, file_paths[i])
-            embedding = (
-                self._get_embedding(absolute_file_path)
-                .detach()
-                .cpu()
-                .numpy()
-                .reshape(-1, 768)
-            )
+        for i in tqdm(range(len(self.json_content))):
+            absolute_file_path = os.path.join(directory, self.json_content[i]["path"])
+            embedding = self._get_embedding(absolute_file_path)
             self.index.add(embedding)
-            json_object.append({"index": i, "file_path": file_path[i]})
-
-        faiss.write_index(self.index, os.path.join(file_path, "vector_database.bin"))
+            json_object.append(
+                {
+                    "index": i,
+                    "path": self.json_content[i]["path"],
+                    "object_id": self.json_content[i]["object_id"],
+                }
+            )
+        faiss.write_index(
+            self.index, os.path.join(self.args.saved_file_path, "vector_database.bin")
+        )
         returned_json = json.dumps(json_object).encode("utf8")
         with open(
-            f"{os.path.join(file_path, 'mapping.json')}", "w", encoding="utf8"
+            f"{os.path.join(self.args.saved_file_path, 'mapping.json')}",
+            "w",
+            encoding="utf8",
         ) as outfile:
             outfile.write(returned_json.decode())
 

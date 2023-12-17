@@ -1,9 +1,10 @@
-from tqdm import tqdm
 from loguru import logger
-from src.crawler.crawler_arguments import CrawlerArguments
-from src.crawler.base_crawler import BaseCrawler
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.common.by import By
+from tqdm import tqdm
+
+from src.crawler.base_crawler import BaseCrawler
+from src.crawler.crawler_arguments import CrawlerArguments
 from src.utils import translate_sport
 
 

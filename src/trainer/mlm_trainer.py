@@ -1,18 +1,12 @@
-import math
 import os
-import wandb
-from transformers import (
-    AutoTokenizer,
-    AutoModelForMaskedLM,
-    DataCollatorForLanguageModeling,
-    TrainingArguments,
-    Trainer,
-)
+
 from datasets import DatasetDict
-from loguru import logger
+from transformers import (AutoModelForMaskedLM, AutoTokenizer,
+                          DataCollatorForLanguageModeling, Trainer,
+                          TrainingArguments)
+
 from src.trainer.base_trainer import BaseTrainer
 from src.trainer.trainer_arguments import TrainerArguments
-from src.utils import preprocess_text
 
 
 class MLMTrainer(BaseTrainer):

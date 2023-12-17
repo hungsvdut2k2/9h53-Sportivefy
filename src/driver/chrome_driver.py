@@ -1,8 +1,8 @@
-from src.driver.base_driver import BaseDriver
-from src.driver.driver_config import DriverConfig
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
+from src.driver.base_driver import BaseDriver
+from src.driver.driver_config import DriverConfig
 
 
 class ChromeDriver(BaseDriver):

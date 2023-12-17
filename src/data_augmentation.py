@@ -1,8 +1,10 @@
 import argparse
 import os
+
+from tqdm import tqdm
+
 from src.data_augmentor.back_translation import BackTranslation
 from src.utils import read_json_file
-from tqdm import tqdm
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -1,11 +1,13 @@
-import uvicorn
 import argparse
-from src.utils import read_json_file
-from src.modules.bm25_search import BM25Search
-from src.modules.text_correction import TextCorrection
-from typing import Optional, List
+from typing import List, Optional
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from src.modules.bm25_search import BM25Search
+from src.modules.text_correction import TextCorrection
+from src.utils import read_json_file
 
 
 class App:

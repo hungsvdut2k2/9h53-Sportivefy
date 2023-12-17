@@ -1,5 +1,6 @@
 from typing import Any, Optional
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 
 class Translator:

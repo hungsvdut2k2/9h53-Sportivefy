@@ -1,5 +1,6 @@
-from .driver_config import DriverConfig
 from abc import abstractmethod
+
+from .driver_config import DriverConfig
 
 
 class BaseDriver:

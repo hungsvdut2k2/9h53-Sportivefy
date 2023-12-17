@@ -1,7 +1,7 @@
 import json
+from typing import Optional
+
 import numpy as np
-from typing import List, Optional
-from loguru import logger
 from pyvi.ViTokenizer import tokenize
 
 

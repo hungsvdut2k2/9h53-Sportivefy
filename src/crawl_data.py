@@ -1,10 +1,10 @@
 import argparse
 import os
-import json
-from tqdm import tqdm
+
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+
 from src.crawler.crawler_factory import get_crawler
 
 

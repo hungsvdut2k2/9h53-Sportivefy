@@ -1,4 +1,5 @@
 import argparse
+
 from src.modules.text_correction import TextCorrection
 from src.utils import read_json_file
 

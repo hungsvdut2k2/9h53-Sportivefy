@@ -1,8 +1,8 @@
-import numpy as np
 import os
-from loguru import logger
-from fuzzywuzzy import fuzz
 from typing import List, Optional
+
+import numpy as np
+from fuzzywuzzy import fuzz
 from tqdm import tqdm
 
 

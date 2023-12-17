@@ -1,4 +1,5 @@
 import argparse
+
 from src.vector_database.database_arguments import DatabaseArguments
 from src.vector_database.vector_database_factory import get_vector_database
 

@@ -1,6 +1,7 @@
+from typing import List, Optional
+
 import numpy as np
 from rank_bm25 import BM25Okapi
-from typing import Optional, List
 
 
 class BM25Search:

@@ -1,10 +1,11 @@
-import faiss
-import os
 import json
+import os
+
+import faiss
 import torch
-from loguru import logger
 from tqdm import tqdm
-from src.utils import read_json_file, preprocess_text
+
+from src.utils import preprocess_text, read_json_file
 from src.vector_database.base_database import BaseDatabase
 from src.vector_database.database_arguments import DatabaseArguments
 

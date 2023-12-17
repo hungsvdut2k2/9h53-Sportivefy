@@ -1,10 +1,12 @@
 import argparse
 import os
+
 import wandb
 from dotenv import load_dotenv
 from huggingface_hub import login
-from src.trainer.trainer_arguments import TrainerArguments
+
 from src.trainer.mlm_trainer import MLMTrainer
+from src.trainer.trainer_arguments import TrainerArguments
 
 if __name__ == "__main__":
     load_dotenv()

@@ -1,6 +1,6 @@
 from src.vector_database.base_database import BaseDatabase
-from vector_database.faiss_text_database import FaissTextDatabase
 from src.vector_database.database_arguments import DatabaseArguments
+from vector_database.faiss_text_database import FaissTextDatabase
 
 
 def get_vector_database(database_type: str, args: DatabaseArguments) -> BaseDatabase:

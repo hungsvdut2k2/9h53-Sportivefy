@@ -1,9 +1,10 @@
-from tqdm import tqdm
 from loguru import logger
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from src.crawler.crawler_arguments import CrawlerArguments
+from selenium.webdriver.common.by import By
+from tqdm import tqdm
+
 from src.crawler.base_crawler import BaseCrawler
+from src.crawler.crawler_arguments import CrawlerArguments
 from src.utils import translate_sport
 
 
@@ -76,7 +77,7 @@ class VnExpressCrawler(BaseCrawler):
                     for tag in title_news_tags:
                         a_tag = tag.find_element(by=By.TAG_NAME, value="a")
                         urls.append(a_tag.get_attribute("href"))
-                except:
-                    logger.debug(f"Error at page {url}")
+                except Exception as e:
+                    logger.debug(f"Error {e} at page {url}")
                 progress_bar.update(1)
         return urls

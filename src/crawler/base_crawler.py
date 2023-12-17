@@ -1,4 +1,5 @@
 from abc import abstractmethod
+
 from src.crawler.crawler_arguments import CrawlerArguments
 from src.driver.driver_factory import get_driver
 
