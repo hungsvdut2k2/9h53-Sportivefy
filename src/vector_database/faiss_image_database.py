@@ -3,10 +3,12 @@ import os
 from typing import Optional
 
 import faiss
+import numpy as np
+import pandas as pd
 import torch
 from PIL import Image
 from tqdm import tqdm
-from transformers import AutoImageProcessor, AutoModel
+from transformers import AutoModel, AutoImageProcessor
 
 from src.vector_database.base_database import BaseDatabase
 from src.vector_database.database_arguments import DatabaseArguments
@@ -14,7 +16,6 @@ from src.vector_database.database_arguments import DatabaseArguments
 
 class FaissImageDatabase(BaseDatabase):
     def __init__(self, args: DatabaseArguments) -> None:
-        super().__init__(args=args)
         self.args = args
         self.model = AutoModel.from_pretrained(self.args.model_name)
         self.processor = AutoImageProcessor.from_pretrained(self.args.model_name)
@@ -23,7 +24,7 @@ class FaissImageDatabase(BaseDatabase):
         self.json_content = json.load(open(self.args.json_file_path))
 
     def _preprocess_image(self, image_path: Optional[str]):
-        image = Image.open(image_path)
+        image = Image.open(image_path).convert("RGB")
         inputs = self.processor(images=image, return_tensors="pt")
         return inputs
 
@@ -33,7 +34,8 @@ class FaissImageDatabase(BaseDatabase):
             **self._preprocess_image(image_path=image_path)
         ).last_hidden_state
 
-        return last_hidden_state[:, 0, :].detach().cpu().numpy()
+        feature = last_hidden_state.mean(dim=1)
+        return np.float32(feature)
 
     def _save(self, directory: Optional[str]):
         json_object = []
@@ -64,5 +66,9 @@ class FaissImageDatabase(BaseDatabase):
 
     def search(self, image_path: Optional[str]):
         image_embedding = self._get_embedding(image_path=image_path)
-        distances, indices = self.index.search(image_embedding, k=100)
-        return distances, indices
+        distances, indices = self.index.search(image_embedding, k=200)
+        mapping_list = [self.json_content[index] for index in indices[0]]
+        mapping_df = pd.DataFrame(mapping_list)
+        mapping_df.drop_duplicates(subset=["object_id"], inplace=True)
+        object_ids = mapping_df["object_id"].tolist()
+        return object_ids

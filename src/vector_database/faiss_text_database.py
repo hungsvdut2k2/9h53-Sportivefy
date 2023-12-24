@@ -5,7 +5,7 @@ from typing import Optional
 import faiss
 import torch
 from tqdm import tqdm
-from transformers import AutoTokenizer
+from transformers import AutoModel, AutoTokenizer
 
 from src.utils import preprocess_text, read_json_file
 from src.vector_database.base_database import BaseDatabase
@@ -15,6 +15,7 @@ from src.vector_database.database_arguments import DatabaseArguments
 class FaissTextDatabase(BaseDatabase):
     def __init__(self, args: DatabaseArguments) -> None:
         super().__init__(args=args)
+        self.model = AutoModel.from_pretrained(args.model_name)
         self.index = faiss.IndexFlatIP(self.model.config.hidden_size)
         self.tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 

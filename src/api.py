@@ -46,10 +46,12 @@ class App:
         @self.app.post("/text-search")
         async def text_search(query: Optional[str]):
             query = self.word_correction(query=query)
-            bm25_indices = self.bm25(query=query)[:5]
-            bm25_result_corpus = [self.corpus[index] for index in bm25_indices]
-            indices = self.text_vector_database.search(sentence=query)
-            result_corpus = [self.corpus[index] for index in indices]
+            bm25_indices = self.bm25(query=query)[:200]
+            bm25_result_corpus = [
+                self.corpus[index]["_id"]["$oid"] for index in bm25_indices
+            ]
+            # indices = self.text_vector_database.search(sentence=query)
+            # result_corpus = [self.corpus[index] for index in indices]
             return {"result": bm25_result_corpus}
 
         @self.app.post("/image-search")
@@ -64,9 +66,8 @@ class App:
             file_location = f"./images/{new_file_name}{file_extension}"
             with open(file_location, "wb+") as file_object:
                 file_object.write(file.file.read())
-            distances, indices = self.image_vector_database.search(file_location)
-            print(distances, indices)
-            return {"indices": "success"}
+            object_ids = self.image_vector_database.search(file_location)
+            return {"result": object_ids}
 
     def word_correction(self, query: Optional[str]):
         query = query.lower()
@@ -137,6 +138,9 @@ if __name__ == "__main__":
     )
     text_vector_database.load(
         os.path.join(args.vector_database_directory, "text_database.bin")
+    )
+    image_vector_database.load(
+        os.path.join(args.vector_database_directory, "image_database.bin")
     )
     app = App(
         corpus=corpus_content,
