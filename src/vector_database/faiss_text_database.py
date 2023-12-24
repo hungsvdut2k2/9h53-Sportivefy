@@ -1,9 +1,11 @@
 import json
 import os
+from typing import Optional
 
 import faiss
 import torch
 from tqdm import tqdm
+from transformers import AutoTokenizer
 
 from src.utils import preprocess_text, read_json_file
 from src.vector_database.base_database import BaseDatabase
@@ -14,17 +16,19 @@ class FaissTextDatabase(BaseDatabase):
     def __init__(self, args: DatabaseArguments) -> None:
         super().__init__(args=args)
         self.index = faiss.IndexFlatIP(self.model.config.hidden_size)
+        self.tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 
-    def _preprocess_json_data(self):
+    def _preprocess_json_data(self, mode="search"):
         json_data = read_json_file(self.json_file_path)
-        for i in range(len(json_data)):
-            json_data[i]["article"] = preprocess_text(json_data[i]["article"])
+        if mode != "search":
+            for i in range(len(json_data)):
+                json_data[i]["article"] = preprocess_text(json_data[i]["article"])
 
         return json_data
 
     def _tokenize(self, sentence):
         return self.tokenizer(
-            sentence, padding=True, truncation=True, return_tensors="pt"
+            sentence, padding=True, truncation=True, return_tensors="pt", max_length=256
         )
 
     @torch.no_grad()
@@ -55,12 +59,13 @@ class FaissTextDatabase(BaseDatabase):
         ) as outfile:
             outfile.write(returned_json.decode())
 
-    def _load(self, file_path: str):
+    def load(self, file_path: Optional[str]):
         self.index = faiss.read_index(file_path)
 
-    def _search(self, query: str, top_k: int):
-        tokenized_query = self._tokenize(query)
-        embedding_query = self._get_embedding(tokenized_query)
-
-        d, i = self.index.search(embedding_query, k=top_k)
-        return i
+    def search(self, indices: Optional[list]):
+        tokenized_sentences = self._tokenize(sentence=sentence)
+        text_embedding = self._get_embedding(tokenized_sentences=tokenized_sentences)
+        distances, indices = self.index.search(text_embedding, k=10)
+        json_data = self._preprocess_json_data()
+        returned_json = [json_data[index]["index"] for index in indices[0]]
+        return returned_json

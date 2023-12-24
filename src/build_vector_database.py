@@ -15,5 +15,6 @@ if __name__ == "__main__":
     database_type = args.pop("database_type")
     saved_file_path = args.pop("saved_file_path")
     database_arguments = DatabaseArguments(args)
+    print(database_arguments.__dict__)
     vector_database = get_vector_database(database_type=database_type, args=args)
     vector_database.save(saved_file_path)

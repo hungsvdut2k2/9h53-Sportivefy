@@ -52,7 +52,7 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
             break
-        except:
+        except Exception as e:
             dataframe_length += 1
-            logger.debug(f"Error at index {i}")
+            logger.debug(f"Error {e} at index {i}")
     dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)

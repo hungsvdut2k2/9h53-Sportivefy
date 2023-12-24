@@ -32,8 +32,8 @@ class FaissImageDatabase(BaseDatabase):
         last_hidden_state = self.model(
             **self._preprocess_image(image_path=image_path)
         ).last_hidden_state
-        average_pooling_result = last_hidden_state.sum(1) / last_hidden_state.size()[1]
-        return average_pooling_result
+
+        return last_hidden_state[:, 0, :].detach().cpu().numpy()
 
     def _save(self, directory: Optional[str]):
         json_object = []
@@ -59,11 +59,10 @@ class FaissImageDatabase(BaseDatabase):
         ) as outfile:
             outfile.write(returned_json.decode())
 
-    def _load(self, file_path: str):
+    def load(self, file_path: Optional[str]):
         self.index = faiss.read_index(file_path)
 
-    def _search(self, image_path: Optional[str], top_k: Optional[int]):
-        embedding_query = self._get_embedding(image_path=image_path)
-
-        d, i = self.index.search(embedding_query, k=top_k)
-        return i
+    def search(self, image_path: Optional[str]):
+        image_embedding = self._get_embedding(image_path=image_path)
+        distances, indices = self.index.search(image_embedding, k=100)
+        return distances, indices
