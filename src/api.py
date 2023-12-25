@@ -7,6 +7,7 @@ from typing import List, Optional
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.modules.bm25_search import BM25Search
 from src.modules.text_correction import TextCorrection
@@ -23,6 +24,7 @@ class App:
         word_corpus: List[str],
         text_vector_database: FaissTextDatabase,
         image_vector_database: FaissImageDatabase,
+        auto_casual_model_name: Optional[str],
     ) -> None:
         self.app = FastAPI()
         self.app.add_middleware(
@@ -38,6 +40,10 @@ class App:
         self.bm25 = BM25Search(corpus=corpus)
         self.text_vector_database = text_vector_database
         self.image_vector_database = image_vector_database
+        self.auto_casual_model = AutoModelForCausalLM.from_pretrained(
+            auto_casual_model_name
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(auto_casual_model_name)
 
         @self.app.get("/")
         async def root():
@@ -69,6 +75,24 @@ class App:
             object_ids = self.image_vector_database.search(file_location)
             return {"result": object_ids}
 
+        @self.app.post("/article-generation")
+        async def article_generate(prompt: Optional[str]):
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+            outputs = self.auto_casual_model.generate(
+                **inputs,
+                max_new_tokens=100,
+                do_sample=True,
+                top_k=5,
+                top_p=0.95,
+                temperature=0.9,
+                eos_token_id=self.auto_casual_model.config.eos_token_id,
+                pad_token_id=self.auto_casual_model.config.eos_token_id,
+            )
+            generated_content = self.tokenizer.batch_decode(
+                outputs, skip_special_tokens=True
+            )
+            return {"result": generated_content}
+
     def word_correction(self, query: Optional[str]):
         query = query.lower()
         query = query.split()
@@ -95,6 +119,11 @@ if __name__ == "__main__":
         default="hungsvdut2k2/longformer-phobert-base-4096",
     )
     parser.add_argument("--image-model-name", type=str, default="facebook/dinov2-base")
+    parser.add_argument(
+        "--text-generation-model-name",
+        type=str,
+        default="hungsvdut2k2/news-article-generator",
+    )
     parser.add_argument(
         "--corpus-file-path",
         type=str,
@@ -147,5 +176,6 @@ if __name__ == "__main__":
         word_corpus=word_corpus,
         text_vector_database=text_vector_database,
         image_vector_database=image_vector_database,
+        auto_casual_model_name=args.text_generation_model_name,
     )
     app.run(port=args.port)

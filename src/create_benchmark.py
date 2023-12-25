@@ -10,8 +10,8 @@ from loguru import logger
 from tqdm import tqdm
 
 
-def generate_prompt(json_content: Optional[str]) -> Optional[str]:
-    generated_prompt = f"##Content:{json_content}\n ##Requirements:Write a query for the content. Make sure it is in Vietnamese and must be unique for only that document,the length of answer must be suitable for a search query,the answer should be wrap up in ##Answer"
+def generate_prompt() -> Optional[str]:
+    generated_prompt = "##Role: Search Engine\n ##Objective: Generate 30 sport queries with flexible length in Vietnamese, the content must be as creative as possible\n ##Content: About Sport and must have one famous athlete's name in one query"
     return generated_prompt
 
 
@@ -26,33 +26,21 @@ def get_response(prompt: Optional[str]) -> Optional[str]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--json-file-path", type=str, required=True)
     parser.add_argument("--output-dir", type=str, required=True)
-    parser.add_argument("--valid-file-path", type=str, default=None)
+    parser.add_argument("--num-request", type=int, default=None)
     args = parser.parse_args()
     dataframe = pd.DataFrame()
-    json_content = json.load(open(args.json_file_path))
-    if args.valid_file_path:
-        dataframe = pd.read_csv(args.valid_file_path)
-        indices = pd.read_csv(args.valid_file_path)["index"].tolist()
-        logger.info("Start Remove Stuff")
-        for index in tqdm(sorted(indices, reverse=True)):
-            json_content.pop(index)
     dataframe_length = len(dataframe)
     logger.info("Start Generate Query")
-    for i in tqdm(range(len(json_content))):
+    for i in tqdm(range(args.num_request)):
+        length = (
+            len(os.listdir("/Users/viethungnguyen/9h53-Sportivefy/dataset/domain")) - 1
+        )
         try:
-            new_row = {}
-            generated_prompt = generate_prompt(json_content=json_content[i]["article"])
-            response = get_response(generate_prompt(generated_prompt))
-            new_row["object_id"] = json_content[i]["_id"]["$oid"]
-            new_row["query"] = response
-            new_row["index"] = dataframe_length + i
-            dataframe = dataframe._append(new_row, ignore_index=True)
-        except KeyboardInterrupt:
-            dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
-            break
+            prompt = generate_prompt()
+            response = get_response(prompt=prompt)
+            with open(os.path.join(args.output_dir, f"{length + i + 5}.txt"), "w") as f:
+                f.writelines(response)
         except Exception as e:
             dataframe_length += 1
             logger.debug(f"Error {e} at index {i}")
-    dataframe.to_csv(os.path.join(args.output_dir, "query.csv"), index=False)
