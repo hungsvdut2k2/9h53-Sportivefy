@@ -8,7 +8,7 @@ import pandas as pd
 import torch
 from PIL import Image
 from tqdm import tqdm
-from transformers import AutoModel, AutoImageProcessor
+from transformers import AutoImageProcessor, AutoModel
 
 from src.vector_database.base_database import BaseDatabase
 from src.vector_database.database_arguments import DatabaseArguments

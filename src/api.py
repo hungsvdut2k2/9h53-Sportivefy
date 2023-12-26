@@ -7,11 +7,13 @@ from typing import List, Optional
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import (AutoModelForCausalLM,
+                          AutoModelForSequenceClassification, AutoTokenizer,
+                          pipeline)
 
 from src.modules.bm25_search import BM25Search
 from src.modules.text_correction import TextCorrection
-from src.utils import read_json_file
+from src.utils import preprocess_text, read_json_file
 from src.vector_database.database_arguments import DatabaseArguments
 from src.vector_database.faiss_image_database import FaissImageDatabase
 from src.vector_database.faiss_text_database import FaissTextDatabase
@@ -25,6 +27,7 @@ class App:
         text_vector_database: FaissTextDatabase,
         image_vector_database: FaissImageDatabase,
         auto_casual_model_name: Optional[str],
+        domain_classification_model_name: Optional[str],
     ) -> None:
         self.app = FastAPI()
         self.app.add_middleware(
@@ -43,7 +46,17 @@ class App:
         self.auto_casual_model = AutoModelForCausalLM.from_pretrained(
             auto_casual_model_name
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(auto_casual_model_name)
+        self.auto_casual_tokenizer = AutoTokenizer.from_pretrained(
+            auto_casual_model_name
+        )
+        self.domain_pipeline = pipeline(
+            "sentiment-analysis",
+            model=AutoModelForSequenceClassification.from_pretrained(
+                domain_classification_model_name
+            ),
+            tokenizer=AutoTokenizer.from_pretrained(domain_classification_model_name),
+            device="cpu",
+        )
 
         @self.app.get("/")
         async def root():
@@ -52,13 +65,19 @@ class App:
         @self.app.post("/text-search")
         async def text_search(query: Optional[str]):
             query = self.word_correction(query=query)
+            query = preprocess_text(query)
+            preds = self.domain_pipeline(query)
+            if preds[0]["label"] == "out_of_domain":
+                return {
+                    "response": "your query does not seem to be related to sports content."
+                }
             bm25_indices = self.bm25(query=query)[:200]
             bm25_result_corpus = [
                 self.corpus[index]["_id"]["$oid"] for index in bm25_indices
             ]
             # indices = self.text_vector_database.search(sentence=query)
             # result_corpus = [self.corpus[index] for index in indices]
-            return {"result": bm25_result_corpus}
+            return {"response": bm25_result_corpus}
 
         @self.app.post("/image-search")
         async def image_search(file: UploadFile):
@@ -73,11 +92,11 @@ class App:
             with open(file_location, "wb+") as file_object:
                 file_object.write(file.file.read())
             object_ids = self.image_vector_database.search(file_location)
-            return {"result": object_ids}
+            return {"response": object_ids}
 
         @self.app.post("/article-generation")
         async def article_generate(prompt: Optional[str]):
-            inputs = self.tokenizer(prompt, return_tensors="pt")
+            inputs = self.auto_casual_tokenizer(prompt, return_tensors="pt")
             outputs = self.auto_casual_model.generate(
                 **inputs,
                 max_new_tokens=100,
@@ -88,10 +107,10 @@ class App:
                 eos_token_id=self.auto_casual_model.config.eos_token_id,
                 pad_token_id=self.auto_casual_model.config.eos_token_id,
             )
-            generated_content = self.tokenizer.batch_decode(
+            generated_content = self.auto_casual_tokenizer.batch_decode(
                 outputs, skip_special_tokens=True
-            )
-            return {"result": generated_content}
+            )[0]
+            return {"response": generated_content}
 
     def word_correction(self, query: Optional[str]):
         query = query.lower()
@@ -116,13 +135,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "--text-model-name",
         type=str,
-        default="hungsvdut2k2/longformer-phobert-base-4096",
+        default="hungsvdut2k2/longformer-phobert-base-256",
     )
     parser.add_argument("--image-model-name", type=str, default="facebook/dinov2-base")
     parser.add_argument(
         "--text-generation-model-name",
         type=str,
         default="hungsvdut2k2/news-article-generator",
+    )
+    parser.add_argument(
+        "--domain-classification-model-name",
+        type=str,
+        default="hungsvdut2k2/sport-domain-classification",
     )
     parser.add_argument(
         "--corpus-file-path",
@@ -177,5 +201,6 @@ if __name__ == "__main__":
         text_vector_database=text_vector_database,
         image_vector_database=image_vector_database,
         auto_casual_model_name=args.text_generation_model_name,
+        domain_classification_model_name=args.domain_classification_model_name,
     )
     app.run(port=args.port)
