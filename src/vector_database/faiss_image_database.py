@@ -1,7 +1,7 @@
 import json
 import os
 from typing import Optional
-
+import open_clip
 import faiss
 import numpy as np
 import pandas as pd
@@ -17,25 +17,20 @@ from src.vector_database.database_arguments import DatabaseArguments
 class FaissImageDatabase(BaseDatabase):
     def __init__(self, args: DatabaseArguments) -> None:
         self.args = args
-        self.model = AutoModel.from_pretrained(self.args.model_name)
-        self.processor = AutoImageProcessor.from_pretrained(self.args.model_name)
-        self.index = faiss.IndexFlatIP(self.model.config.hidden_size)
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.json_content = json.load(open(self.args.json_file_path))
+        self.model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-B-32", pretrained="laion2b_s34b_b79k"
+        )
+        self.index = faiss.IndexFlatIP(512)
 
     def _preprocess_image(self, image_path: Optional[str]):
-        image = Image.open(image_path).convert("RGB")
-        inputs = self.processor(images=image, return_tensors="pt")
-        return inputs
+        image = self.preprocess(Image.open(image_path)).unsqueeze(0)
+        return image
 
     @torch.no_grad()
     def _get_embedding(self, image_path: Optional[str]):
-        last_hidden_state = self.model(
-            **self._preprocess_image(image_path=image_path)
-        ).last_hidden_state
-
-        feature = last_hidden_state.mean(dim=1)
-        return np.float32(feature)
+        last_hidden_state = self.model.encode_image(self._preprocess_image(image_path))
+        return last_hidden_state.detach().cpu().numpy()
 
     def _save(self, directory: Optional[str]):
         json_object = []
