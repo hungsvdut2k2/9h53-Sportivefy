@@ -67,7 +67,7 @@ class App:
         async def root():
             return {"message": "hello"}
 
-        @self.app.post("/text-search")
+        @self.app.get("/text-search")
         async def text_search(query: Optional[str]):
             query = self.word_correction(query=query)
             query = preprocess_text(query)
@@ -76,12 +76,11 @@ class App:
                 return {
                     "response": "your query does not seem to be related to sports content."
                 }
-            bm25_indices = self.bm25(query=query)[:200]
-            bm25_result_corpus = [self.corpus[index]["title"] for index in bm25_indices]
-            result_corpus = [self.get_slug(title) for title in bm25_result_corpus]
-            result_corpus = list(dict.fromkeys(result_corpus))
-            # indices = self.text_vector_database.search(sentence=query)
-            # result_corpus = [self.corpus[index] for index in indices]
+            # bm25_indices = self.bm25(query=query)[:200]
+            # bm25_result_corpus = [self.corpus[index]["title"] for index in bm25_indices]
+            # result_corpus = list(dict.fromkeys(result_corpus))
+            indices = self.text_vector_database.search(sentence=query)
+            result_corpus = [self.corpus[index]["title"] for index in indices]
             return {"response": result_corpus}
 
         @self.app.post("/image-search")

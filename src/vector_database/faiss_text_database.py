@@ -29,14 +29,20 @@ class FaissTextDatabase(BaseDatabase):
 
     def _tokenize(self, sentence):
         return self.tokenizer(
-            sentence, padding=True, truncation=True, return_tensors="pt", max_length=256
+            sentence, truncation=True, return_tensors="pt", max_length=256
         )
 
     @torch.no_grad()
     def _get_embedding(self, tokenized_sentences):
-        return self.model(
-            **tokenized_sentences, output_hidden_states=True, return_dict=True
-        ).pooler_output
+        return (
+            torch.mean(
+                self.model(**tokenized_sentences).last_hidden_state,
+                dim=1,
+            )
+            .detach()
+            .cpu()
+            .numpy()
+        )
 
     def _save(self, file_path: str):
         os.makedirs(file_path, exist_ok=True)
@@ -63,10 +69,10 @@ class FaissTextDatabase(BaseDatabase):
     def load(self, file_path: Optional[str]):
         self.index = faiss.read_index(file_path)
 
-    def search(self, indices: Optional[list]):
+    def search(self, sentence):
         tokenized_sentences = self._tokenize(sentence=sentence)
         text_embedding = self._get_embedding(tokenized_sentences=tokenized_sentences)
-        distances, indices = self.index.search(text_embedding, k=10)
+        distances, indices = self.index.search(text_embedding, k=200)
         json_data = self._preprocess_json_data()
         returned_json = [json_data[index]["index"] for index in indices[0]]
         return returned_json
