@@ -10,14 +10,14 @@ class TextCorrection:
     def __init__(self, corpus: List[str], mode="load") -> None:
         if mode == "build":
             for doc in corpus:
-                if isinstance(doc["article"], list):
-                    doc["article"] = "\n".join(doc["article"])
+                if isinstance(doc["document"], list):
+                    doc["document"] = "\n".join(doc["document"])
         self.corpus = corpus
 
     def _build_word_corpus(self, save_directory: Optional[str]):
         word_corpus = []
-        for article in tqdm(self.corpus):
-            content = article["article"]
+        for document in tqdm(self.corpus):
+            content = document["document"]
             for word in content.split():
                 word = word.lower()
                 word = word.strip(""" !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")

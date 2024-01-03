@@ -12,10 +12,10 @@ class VnExpressCrawler(BaseCrawler):
     def __init__(self, arguments: CrawlerArguments, driver_type="chrome") -> None:
         super().__init__(arguments, driver_type)
 
-    def _get_articles(self, url_list: list):
-        logger.info("Start Crawl Articles")
+    def _get_documents(self, url_list: list):
+        logger.info("Start Crawl documents")
         result = []
-        for i in tqdm(range(len(url_list))):
+        for i in tqdm(range((450 + 690), len(url_list))):
             try:
                 corpus = {}
                 self.driver.get(url_list[i])
@@ -37,13 +37,13 @@ class VnExpressCrawler(BaseCrawler):
                     by=By.CSS_SELECTOR, value="h1.title-detail"
                 ).text
                 corpus["sport_type"] = "education"
-                article_tags = self.driver.find_elements(
+                document_tags = self.driver.find_elements(
                     by=By.CSS_SELECTOR, value="p.Normal"
                 )
-                article = [tag.text for tag in article_tags]
-                if len(article) > 0:
-                    corpus["author"] = article.pop()
-                corpus["article"] = article
+                document = [tag.text for tag in document_tags]
+                if len(document) > 0:
+                    corpus["author"] = document.pop()
+                corpus["document"] = document
                 count = 0
                 image_tags = self.driver.find_elements(by=By.TAG_NAME, value="img")
                 for tag in image_tags:

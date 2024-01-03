@@ -70,5 +70,6 @@ class FaissImageDatabase(BaseDatabase):
         mapping_list = [self.json_content[index] for index in indices[0]]
         mapping_df = pd.DataFrame(mapping_list)
         mapping_df.drop_duplicates(subset=["object_id"], inplace=True)
-        object_ids = mapping_df["object_id"].tolist()
-        return object_ids
+        titles = mapping_df["title"].tolist()
+        titles = [title for title in titles if isinstance(title, str)]
+        return titles

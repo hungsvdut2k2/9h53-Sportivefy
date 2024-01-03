@@ -12,9 +12,9 @@ class DanTriCrawler(BaseCrawler):
     def __init__(self, arguments: CrawlerArguments, driver_type="chrome") -> None:
         super().__init__(arguments, driver_type)
 
-    def _get_articles(self, url_list: list):
+    def _get_documents(self, url_list: list):
         result = []
-        for i in tqdm(range(len(url_list))):
+        for i in tqdm(range((1650 + 678), len(url_list))):
             corpus = {}
             url = url_list[i]
             try:
@@ -56,7 +56,7 @@ class DanTriCrawler(BaseCrawler):
                 text_content = "\n".join(
                     [tag.text for tag in content if tag.text not in caption_list]
                 )
-                corpus["article"] = text_content
+                corpus["document"] = text_content
                 image_tags = singular_content.find_elements(
                     by=By.CSS_SELECTOR, value="figure.image.align-center"
                 )
@@ -95,14 +95,14 @@ class DanTriCrawler(BaseCrawler):
                     url = f"{self.arguments.main_url}/{link}/trang-{i}.htm"
                 try:
                     self.driver.get(url)
-                    article_titles = self.driver.find_elements(
+                    document_titles = self.driver.find_elements(
                         by=By.CSS_SELECTOR, value="h3.article-title"
                     )
-                    for tag in article_titles:
+                    for tag in document_titles:
                         a_tag = tag.find_element(by=By.TAG_NAME, value="a")
                         urls.append(a_tag.get_attribute("href"))
                 except:
                     logger.debug(f"Error at page {url}")
                 progress_bar.update(1)
-
+            print(urls)
         return urls

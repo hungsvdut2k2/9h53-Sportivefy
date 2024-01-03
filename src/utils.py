@@ -40,12 +40,12 @@ def mapping_value(indices: list, mapping_dict: dict) -> list:
     return object_id
 
 
-def get_articles(object_id: list, articles_dict: dict) -> list:
-    articles = [
-        article for article in articles_dict if article["_id"]["$oid"] in object_id
+def get_documents(object_id: list, documents_dict: dict) -> list:
+    documents = [
+        document for document in documents_dict if document["_id"]["$oid"] in object_id
     ]
 
-    return articles
+    return documents
 
 
 def translate_sport(sport: str) -> str:

@@ -10,7 +10,7 @@ from src.crawler.crawler_factory import get_crawler
 
 def get_collection(connection_string: str, database_name: str):
     client = MongoClient(connection_string, server_api=ServerApi("1"))
-    database = client["articles"]
+    database = client["documents"]
     collection = database[database_name]
     return collection
 
@@ -23,10 +23,10 @@ if __name__ == "__main__":
 
     load_dotenv()
     connection_string = os.getenv("CONNECTION_STRING")
-    collection = get_collection(connection_string, args.crawler_type)
+    collection = get_collection(connection_string, "other_vnexpress")
 
     crawler = get_crawler(crawler_type=args.crawler_type)
 
     urls_list = crawler.get_urls(num_pages=args.num_pages)
-    articles = crawler.get_articles(url_list=urls_list)
-    collection.insert_many(articles)
+    documents = crawler.get_documents(url_list=urls_list)
+    collection.insert_many(documents)

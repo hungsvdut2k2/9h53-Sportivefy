@@ -23,7 +23,7 @@ class FaissTextDatabase(BaseDatabase):
         json_data = read_json_file(self.json_file_path)
         if mode != "search":
             for i in range(len(json_data)):
-                json_data[i]["article"] = preprocess_text(json_data[i]["article"])
+                json_data[i]["document"] = preprocess_text(json_data[i]["document"])
 
         return json_data
 
@@ -45,8 +45,8 @@ class FaissTextDatabase(BaseDatabase):
         for i in tqdm(range(len(json_data))):
             saved_json = {}
             object_id = json_data[i]["_id"]["$oid"]
-            article = json_data[i]["article"]
-            tokenized_sentences = self._tokenize(article)
+            document = json_data[i]["document"]
+            tokenized_sentences = self._tokenize(document)
             embedding = self._get_embedding(tokenized_sentences)
             self.index.add(embedding)
             saved_json["index"] = i

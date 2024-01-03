@@ -1,9 +1,13 @@
 import os
 
 from datasets import DatasetDict
-from transformers import (AutoModelForMaskedLM, AutoTokenizer,
-                          DataCollatorForLanguageModeling, Trainer,
-                          TrainingArguments)
+from transformers import (
+    AutoModelForMaskedLM,
+    AutoTokenizer,
+    DataCollatorForLanguageModeling,
+    Trainer,
+    TrainingArguments,
+)
 
 from src.trainer.base_trainer import BaseTrainer
 from src.trainer.trainer_arguments import TrainerArguments

@@ -1,4 +1,6 @@
 import argparse
+import unicodedata
+import re
 import os
 import pathlib
 import uuid
@@ -7,9 +9,12 @@ from typing import List, Optional
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import (AutoModelForCausalLM,
-                          AutoModelForSequenceClassification, AutoTokenizer,
-                          pipeline)
+from transformers import (
+    AutoModelForCausalLM,
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    pipeline,
+)
 
 from src.modules.bm25_search import BM25Search
 from src.modules.text_correction import TextCorrection
@@ -72,12 +77,12 @@ class App:
                     "response": "your query does not seem to be related to sports content."
                 }
             bm25_indices = self.bm25(query=query)[:200]
-            bm25_result_corpus = [
-                self.corpus[index]["_id"]["$oid"] for index in bm25_indices
-            ]
+            bm25_result_corpus = [self.corpus[index]["title"] for index in bm25_indices]
+            result_corpus = [self.get_slug(title) for title in bm25_result_corpus]
+            result_corpus = list(dict.fromkeys(result_corpus))
             # indices = self.text_vector_database.search(sentence=query)
             # result_corpus = [self.corpus[index] for index in indices]
-            return {"response": bm25_result_corpus}
+            return {"response": result_corpus}
 
         @self.app.post("/image-search")
         async def image_search(file: UploadFile):
@@ -91,11 +96,13 @@ class App:
             file_location = f"./images/{new_file_name}{file_extension}"
             with open(file_location, "wb+") as file_object:
                 file_object.write(file.file.read())
-            object_ids = self.image_vector_database.search(file_location)
-            return {"response": object_ids}
+            titles = self.image_vector_database.search(file_location)
+            result_title = [self.get_slug(title) for title in titles]
+            result_title = list(dict.fromkeys(result_title))
+            return {"response": result_title}
 
-        @self.app.post("/article-generation")
-        async def article_generate(prompt: Optional[str]):
+        @self.app.post("/document-generation")
+        async def document_generate(prompt: Optional[str]):
             inputs = self.auto_casual_tokenizer(prompt, return_tensors="pt")
             outputs = self.auto_casual_model.generate(
                 **inputs,
@@ -124,6 +131,37 @@ class App:
                     query[i] = corrected_word
         query = " ".join(query)
         return query
+
+    def get_slug(self, string, separator=""):
+        # Remove text within parentheses and trim
+        string = re.sub(r"\([^)]*\)", "", string).strip()
+
+        # Convert to lowercase
+        string = string.lower()
+
+        # Remove periods
+        string = string.replace(".", "")
+
+        # Normalize Unicode characters to decompose accents
+        string = unicodedata.normalize("NFD", string).encode("ascii", "ignore").decode()
+
+        # Replace đ and Đ with d
+        string = string.replace("đ", "d").replace("Đ", "d")
+
+        # Remove characters that are not alphanumeric, spaces, or hyphens
+        string = re.sub(r"[^0-9a-z-\s]", "", string)
+
+        # Replace spaces with hyphens
+        string = string.replace(" ", "-")
+
+        # Collapse multiple hyphens into a single one
+        string = re.sub(r"-+", "-", string)
+
+        # Remove leading and trailing hyphens
+        string = string.strip("-")
+
+        # Join with no separator
+        return separator.join(string.split("-"))
 
     def run(self, port: int):
         uvicorn.run(self.app, host="0.0.0.0", port=port)

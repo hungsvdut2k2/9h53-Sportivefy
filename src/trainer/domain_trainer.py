@@ -3,8 +3,13 @@ from typing import Optional
 
 import pandas as pd
 from datasets import DatasetDict
-from transformers import (AutoModelForSequenceClassification, AutoTokenizer,
-                          DataCollator, Trainer, TrainingArguments)
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    DataCollator,
+    Trainer,
+    TrainingArguments,
+)
 
 from src.trainer.base_trainer import BaseTrainer
 from src.trainer.trainer_arguments import TrainerArguments
