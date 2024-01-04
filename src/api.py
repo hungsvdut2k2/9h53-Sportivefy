@@ -4,10 +4,13 @@ import re
 import os
 import pathlib
 import uuid
+import shutil
+
+import requests
 from typing import List, Optional
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import (
     AutoModelForCausalLM,
@@ -76,11 +79,10 @@ class App:
                 return {
                     "response": "your query does not seem to be related to sports content."
                 }
-            # bm25_indices = self.bm25(query=query)[:200]
-            # bm25_result_corpus = [self.corpus[index]["title"] for index in bm25_indices]
-            # result_corpus = list(dict.fromkeys(result_corpus))
-            indices = self.text_vector_database.search(sentence=query)
+            #bm25_indices = self.bm25(query=query)[:200]
+            indices = self.text_vector_database.search(query)
             result_corpus = [self.corpus[index]["title"] for index in indices]
+            result_corpus = list(dict.fromkeys(result_corpus))
             return {"response": result_corpus}
 
         @self.app.post("/image-search")
@@ -96,8 +98,8 @@ class App:
             with open(file_location, "wb+") as file_object:
                 file_object.write(file.file.read())
             titles = self.image_vector_database.search(file_location)
-            result_title = [self.get_slug(title) for title in titles]
-            result_title = list(dict.fromkeys(result_title))
+            # result_title = [self.get_slug(title) for title in titles]
+            result_title = list(dict.fromkeys(titles))
             return {"response": result_title}
 
         @self.app.post("/document-generation")
@@ -109,7 +111,7 @@ class App:
                 do_sample=True,
                 top_k=5,
                 top_p=0.95,
-                temperature=0.9,
+                temperature=0.5,
                 eos_token_id=self.auto_casual_model.config.eos_token_id,
                 pad_token_id=self.auto_casual_model.config.eos_token_id,
             )
@@ -117,6 +119,28 @@ class App:
                 outputs, skip_special_tokens=True
             )[0]
             return {"response": generated_content}
+    
+        @self.app.post("/add-article")
+        async def add_article(title: Optional[str], content: Optional[str], image_url: Optional[str]):
+            object_id = str(uuid.uuid4())
+            new_file_path = os.path.join("./images", f"{object_id}.jpg")
+
+            #save images
+            response = requests.get(image_url, stream=True)
+            with open(new_file_path, 'wb') as out_file:
+                shutil.copyfileobj(response.raw, out_file)
+            
+            self.image_vector_database.add_image(new_file_path, title, object_id)
+
+            #save text
+
+            sentence = title + "." + content
+            self.text_vector_database.add(sentence)
+            self.corpus.append({"_id": {"$oid" : object_id}, "title": title})
+            print(self.corpus[-1])
+
+            return {"response": "ok"}
+
 
     def word_correction(self, query: Optional[str]):
         query = query.lower()

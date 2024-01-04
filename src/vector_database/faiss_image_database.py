@@ -68,3 +68,10 @@ class FaissImageDatabase(BaseDatabase):
         titles = mapping_df["title"].tolist()
         titles = [title for title in titles if isinstance(title, str)]
         return titles
+
+    def add_image(self, image_path: Optional[str], title: Optional[str], object_id: Optional[str]):
+        print(self.index.ntotal)
+        image_embedding = self._get_embedding(image_path=image_path)
+        self.index.add(image_embedding)
+        self.json_content.append({"index":self.index.ntotal, "title": title, "object_id": object_id, "path": f"images/{self.index.ntotal}.jpg"})
+        print(self.json_content[-1])

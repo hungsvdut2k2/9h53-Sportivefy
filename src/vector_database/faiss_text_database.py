@@ -1,5 +1,6 @@
 import json
 import os
+import numpy as np
 from typing import Optional
 
 import faiss
@@ -18,6 +19,7 @@ class FaissTextDatabase(BaseDatabase):
         self.model = AutoModel.from_pretrained(args.model_name)
         self.index = faiss.IndexFlatIP(self.model.config.hidden_size)
         self.tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+        self.json_data = self._preprocess_json_data()
 
     def _preprocess_json_data(self, mode="search"):
         json_data = read_json_file(self.json_file_path)
@@ -69,10 +71,40 @@ class FaissTextDatabase(BaseDatabase):
     def load(self, file_path: Optional[str]):
         self.index = faiss.read_index(file_path)
 
+    def cosine_similarity(self, vector, matrix):
+        """
+        Calculate the cosine similarity between a vector and each row of a matrix.
+
+        :param vector: A 1D NumPy array.
+        :param matrix: A 2D NumPy array with the same number of columns as the vector.
+        :return: A 1D NumPy array containing the cosine similarity between the vector and each row of the matrix.
+        """
+        # Normalize the vector
+        vector_norm = vector / np.linalg.norm(vector)
+        
+        # Normalize each row in the matrix
+        matrix_norm = matrix / np.linalg.norm(matrix, axis=1, keepdims=True)
+        
+        # Calculate the cosine similarity
+        return np.dot(vector_norm, matrix_norm.T)
+
     def search(self, sentence):
         tokenized_sentences = self._tokenize(sentence=sentence)
         text_embedding = self._get_embedding(tokenized_sentences=tokenized_sentences)
         distances, indices = self.index.search(text_embedding, k=200)
-        json_data = self._preprocess_json_data()
-        returned_json = [json_data[index]["index"] for index in indices[0]]
-        return returned_json
+        return indices[0]
+    
+    def temp_search(self, query,indices):
+        reconstructed_vectors = np.array([self.index.reconstruct(int(idx)) for idx in indices])
+        tokenized_sentences = self._tokenize(sentence=query)
+        text_embedding = self._get_embedding(tokenized_sentences=tokenized_sentences)
+        cosine_similarities = self.cosine_similarity(text_embedding, reconstructed_vectors)[0]
+        output_indices = np.argsort(cosine_similarities)[::-1]
+        final_indices = [indices[output_indices[i]] for i in range(len(output_indices))]
+        return final_indices
+
+    def add(self, sentence):
+        tokenized_sentences = self._tokenize(sentence=sentence)
+        text_embedding = self._get_embedding(tokenized_sentences=tokenized_sentences)
+        self.index.add(text_embedding) 
+        print(self.index.ntotal)
